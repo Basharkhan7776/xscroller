@@ -1,0 +1,1595 @@
+// node_modules/@google/generative-ai/dist/index.mjs
+var SchemaType;
+(function (SchemaType2) {
+  SchemaType2["STRING"] = "string";
+  SchemaType2["NUMBER"] = "number";
+  SchemaType2["INTEGER"] = "integer";
+  SchemaType2["BOOLEAN"] = "boolean";
+  SchemaType2["ARRAY"] = "array";
+  SchemaType2["OBJECT"] = "object";
+})(SchemaType || (SchemaType = {}));
+var ExecutableCodeLanguage;
+(function (ExecutableCodeLanguage2) {
+  ExecutableCodeLanguage2["LANGUAGE_UNSPECIFIED"] = "language_unspecified";
+  ExecutableCodeLanguage2["PYTHON"] = "python";
+})(ExecutableCodeLanguage || (ExecutableCodeLanguage = {}));
+var Outcome;
+(function (Outcome2) {
+  Outcome2["OUTCOME_UNSPECIFIED"] = "outcome_unspecified";
+  Outcome2["OUTCOME_OK"] = "outcome_ok";
+  Outcome2["OUTCOME_FAILED"] = "outcome_failed";
+  Outcome2["OUTCOME_DEADLINE_EXCEEDED"] = "outcome_deadline_exceeded";
+})(Outcome || (Outcome = {}));
+var POSSIBLE_ROLES = ["user", "model", "function", "system"];
+var HarmCategory;
+(function (HarmCategory2) {
+  HarmCategory2["HARM_CATEGORY_UNSPECIFIED"] = "HARM_CATEGORY_UNSPECIFIED";
+  HarmCategory2["HARM_CATEGORY_HATE_SPEECH"] = "HARM_CATEGORY_HATE_SPEECH";
+  HarmCategory2["HARM_CATEGORY_SEXUALLY_EXPLICIT"] =
+    "HARM_CATEGORY_SEXUALLY_EXPLICIT";
+  HarmCategory2["HARM_CATEGORY_HARASSMENT"] = "HARM_CATEGORY_HARASSMENT";
+  HarmCategory2["HARM_CATEGORY_DANGEROUS_CONTENT"] =
+    "HARM_CATEGORY_DANGEROUS_CONTENT";
+  HarmCategory2["HARM_CATEGORY_CIVIC_INTEGRITY"] =
+    "HARM_CATEGORY_CIVIC_INTEGRITY";
+})(HarmCategory || (HarmCategory = {}));
+var HarmBlockThreshold;
+(function (HarmBlockThreshold2) {
+  HarmBlockThreshold2["HARM_BLOCK_THRESHOLD_UNSPECIFIED"] =
+    "HARM_BLOCK_THRESHOLD_UNSPECIFIED";
+  HarmBlockThreshold2["BLOCK_LOW_AND_ABOVE"] = "BLOCK_LOW_AND_ABOVE";
+  HarmBlockThreshold2["BLOCK_MEDIUM_AND_ABOVE"] = "BLOCK_MEDIUM_AND_ABOVE";
+  HarmBlockThreshold2["BLOCK_ONLY_HIGH"] = "BLOCK_ONLY_HIGH";
+  HarmBlockThreshold2["BLOCK_NONE"] = "BLOCK_NONE";
+})(HarmBlockThreshold || (HarmBlockThreshold = {}));
+var HarmProbability;
+(function (HarmProbability2) {
+  HarmProbability2["HARM_PROBABILITY_UNSPECIFIED"] =
+    "HARM_PROBABILITY_UNSPECIFIED";
+  HarmProbability2["NEGLIGIBLE"] = "NEGLIGIBLE";
+  HarmProbability2["LOW"] = "LOW";
+  HarmProbability2["MEDIUM"] = "MEDIUM";
+  HarmProbability2["HIGH"] = "HIGH";
+})(HarmProbability || (HarmProbability = {}));
+var BlockReason;
+(function (BlockReason2) {
+  BlockReason2["BLOCKED_REASON_UNSPECIFIED"] = "BLOCKED_REASON_UNSPECIFIED";
+  BlockReason2["SAFETY"] = "SAFETY";
+  BlockReason2["OTHER"] = "OTHER";
+})(BlockReason || (BlockReason = {}));
+var FinishReason;
+(function (FinishReason2) {
+  FinishReason2["FINISH_REASON_UNSPECIFIED"] = "FINISH_REASON_UNSPECIFIED";
+  FinishReason2["STOP"] = "STOP";
+  FinishReason2["MAX_TOKENS"] = "MAX_TOKENS";
+  FinishReason2["SAFETY"] = "SAFETY";
+  FinishReason2["RECITATION"] = "RECITATION";
+  FinishReason2["LANGUAGE"] = "LANGUAGE";
+  FinishReason2["BLOCKLIST"] = "BLOCKLIST";
+  FinishReason2["PROHIBITED_CONTENT"] = "PROHIBITED_CONTENT";
+  FinishReason2["SPII"] = "SPII";
+  FinishReason2["MALFORMED_FUNCTION_CALL"] = "MALFORMED_FUNCTION_CALL";
+  FinishReason2["OTHER"] = "OTHER";
+})(FinishReason || (FinishReason = {}));
+var TaskType;
+(function (TaskType2) {
+  TaskType2["TASK_TYPE_UNSPECIFIED"] = "TASK_TYPE_UNSPECIFIED";
+  TaskType2["RETRIEVAL_QUERY"] = "RETRIEVAL_QUERY";
+  TaskType2["RETRIEVAL_DOCUMENT"] = "RETRIEVAL_DOCUMENT";
+  TaskType2["SEMANTIC_SIMILARITY"] = "SEMANTIC_SIMILARITY";
+  TaskType2["CLASSIFICATION"] = "CLASSIFICATION";
+  TaskType2["CLUSTERING"] = "CLUSTERING";
+})(TaskType || (TaskType = {}));
+var FunctionCallingMode;
+(function (FunctionCallingMode2) {
+  FunctionCallingMode2["MODE_UNSPECIFIED"] = "MODE_UNSPECIFIED";
+  FunctionCallingMode2["AUTO"] = "AUTO";
+  FunctionCallingMode2["ANY"] = "ANY";
+  FunctionCallingMode2["NONE"] = "NONE";
+})(FunctionCallingMode || (FunctionCallingMode = {}));
+var DynamicRetrievalMode;
+(function (DynamicRetrievalMode2) {
+  DynamicRetrievalMode2["MODE_UNSPECIFIED"] = "MODE_UNSPECIFIED";
+  DynamicRetrievalMode2["MODE_DYNAMIC"] = "MODE_DYNAMIC";
+})(DynamicRetrievalMode || (DynamicRetrievalMode = {}));
+
+class GoogleGenerativeAIError extends Error {
+  constructor(message) {
+    super(`[GoogleGenerativeAI Error]: ${message}`);
+  }
+}
+
+class GoogleGenerativeAIResponseError extends GoogleGenerativeAIError {
+  constructor(message, response) {
+    super(message);
+    this.response = response;
+  }
+}
+
+class GoogleGenerativeAIFetchError extends GoogleGenerativeAIError {
+  constructor(message, status, statusText, errorDetails) {
+    super(message);
+    this.status = status;
+    this.statusText = statusText;
+    this.errorDetails = errorDetails;
+  }
+}
+
+class GoogleGenerativeAIRequestInputError extends GoogleGenerativeAIError {}
+
+class GoogleGenerativeAIAbortError extends GoogleGenerativeAIError {}
+var DEFAULT_BASE_URL = "https://generativelanguage.googleapis.com";
+var DEFAULT_API_VERSION = "v1beta";
+var PACKAGE_VERSION = "0.24.1";
+var PACKAGE_LOG_HEADER = "genai-js";
+var Task;
+(function (Task2) {
+  Task2["GENERATE_CONTENT"] = "generateContent";
+  Task2["STREAM_GENERATE_CONTENT"] = "streamGenerateContent";
+  Task2["COUNT_TOKENS"] = "countTokens";
+  Task2["EMBED_CONTENT"] = "embedContent";
+  Task2["BATCH_EMBED_CONTENTS"] = "batchEmbedContents";
+})(Task || (Task = {}));
+
+class RequestUrl {
+  constructor(model, task, apiKey, stream, requestOptions) {
+    this.model = model;
+    this.task = task;
+    this.apiKey = apiKey;
+    this.stream = stream;
+    this.requestOptions = requestOptions;
+  }
+  toString() {
+    var _a, _b;
+    const apiVersion =
+      ((_a = this.requestOptions) === null || _a === undefined
+        ? undefined
+        : _a.apiVersion) || DEFAULT_API_VERSION;
+    const baseUrl =
+      ((_b = this.requestOptions) === null || _b === undefined
+        ? undefined
+        : _b.baseUrl) || DEFAULT_BASE_URL;
+    let url = `${baseUrl}/${apiVersion}/${this.model}:${this.task}`;
+    if (this.stream) {
+      url += "?alt=sse";
+    }
+    return url;
+  }
+}
+function getClientHeaders(requestOptions) {
+  const clientHeaders = [];
+  if (
+    requestOptions === null || requestOptions === undefined
+      ? undefined
+      : requestOptions.apiClient
+  ) {
+    clientHeaders.push(requestOptions.apiClient);
+  }
+  clientHeaders.push(`${PACKAGE_LOG_HEADER}/${PACKAGE_VERSION}`);
+  return clientHeaders.join(" ");
+}
+async function getHeaders(url) {
+  var _a;
+  const headers = new Headers();
+  headers.append("Content-Type", "application/json");
+  headers.append("x-goog-api-client", getClientHeaders(url.requestOptions));
+  headers.append("x-goog-api-key", url.apiKey);
+  let customHeaders =
+    (_a = url.requestOptions) === null || _a === undefined
+      ? undefined
+      : _a.customHeaders;
+  if (customHeaders) {
+    if (!(customHeaders instanceof Headers)) {
+      try {
+        customHeaders = new Headers(customHeaders);
+      } catch (e) {
+        throw new GoogleGenerativeAIRequestInputError(
+          `unable to convert customHeaders value ${JSON.stringify(customHeaders)} to Headers: ${e.message}`,
+        );
+      }
+    }
+    for (const [headerName, headerValue] of customHeaders.entries()) {
+      if (headerName === "x-goog-api-key") {
+        throw new GoogleGenerativeAIRequestInputError(
+          `Cannot set reserved header name ${headerName}`,
+        );
+      } else if (headerName === "x-goog-api-client") {
+        throw new GoogleGenerativeAIRequestInputError(
+          `Header name ${headerName} can only be set using the apiClient field`,
+        );
+      }
+      headers.append(headerName, headerValue);
+    }
+  }
+  return headers;
+}
+async function constructModelRequest(
+  model,
+  task,
+  apiKey,
+  stream,
+  body,
+  requestOptions,
+) {
+  const url = new RequestUrl(model, task, apiKey, stream, requestOptions);
+  return {
+    url: url.toString(),
+    fetchOptions: Object.assign(
+      Object.assign({}, buildFetchOptions(requestOptions)),
+      { method: "POST", headers: await getHeaders(url), body },
+    ),
+  };
+}
+async function makeModelRequest(
+  model,
+  task,
+  apiKey,
+  stream,
+  body,
+  requestOptions = {},
+  fetchFn = fetch,
+) {
+  const { url, fetchOptions } = await constructModelRequest(
+    model,
+    task,
+    apiKey,
+    stream,
+    body,
+    requestOptions,
+  );
+  return makeRequest(url, fetchOptions, fetchFn);
+}
+async function makeRequest(url, fetchOptions, fetchFn = fetch) {
+  let response;
+  try {
+    response = await fetchFn(url, fetchOptions);
+  } catch (e) {
+    handleResponseError(e, url);
+  }
+  if (!response.ok) {
+    await handleResponseNotOk(response, url);
+  }
+  return response;
+}
+function handleResponseError(e, url) {
+  let err = e;
+  if (err.name === "AbortError") {
+    err = new GoogleGenerativeAIAbortError(
+      `Request aborted when fetching ${url.toString()}: ${e.message}`,
+    );
+    err.stack = e.stack;
+  } else if (
+    !(
+      e instanceof GoogleGenerativeAIFetchError ||
+      e instanceof GoogleGenerativeAIRequestInputError
+    )
+  ) {
+    err = new GoogleGenerativeAIError(
+      `Error fetching from ${url.toString()}: ${e.message}`,
+    );
+    err.stack = e.stack;
+  }
+  throw err;
+}
+async function handleResponseNotOk(response, url) {
+  let message = "";
+  let errorDetails;
+  try {
+    const json = await response.json();
+    message = json.error.message;
+    if (json.error.details) {
+      message += ` ${JSON.stringify(json.error.details)}`;
+      errorDetails = json.error.details;
+    }
+  } catch (e) {}
+  throw new GoogleGenerativeAIFetchError(
+    `Error fetching from ${url.toString()}: [${response.status} ${response.statusText}] ${message}`,
+    response.status,
+    response.statusText,
+    errorDetails,
+  );
+}
+function buildFetchOptions(requestOptions) {
+  const fetchOptions = {};
+  if (
+    (requestOptions === null || requestOptions === undefined
+      ? undefined
+      : requestOptions.signal) !== undefined ||
+    (requestOptions === null || requestOptions === undefined
+      ? undefined
+      : requestOptions.timeout) >= 0
+  ) {
+    const controller = new AbortController();
+    if (
+      (requestOptions === null || requestOptions === undefined
+        ? undefined
+        : requestOptions.timeout) >= 0
+    ) {
+      setTimeout(() => controller.abort(), requestOptions.timeout);
+    }
+    if (
+      requestOptions === null || requestOptions === undefined
+        ? undefined
+        : requestOptions.signal
+    ) {
+      requestOptions.signal.addEventListener("abort", () => {
+        controller.abort();
+      });
+    }
+    fetchOptions.signal = controller.signal;
+  }
+  return fetchOptions;
+}
+function addHelpers(response) {
+  response.text = () => {
+    if (response.candidates && response.candidates.length > 0) {
+      if (response.candidates.length > 1) {
+        console.warn(
+          `This response had ${response.candidates.length} ` +
+            `candidates. Returning text from the first candidate only. ` +
+            `Access response.candidates directly to use the other candidates.`,
+        );
+      }
+      if (hadBadFinishReason(response.candidates[0])) {
+        throw new GoogleGenerativeAIResponseError(
+          `${formatBlockErrorMessage(response)}`,
+          response,
+        );
+      }
+      return getText(response);
+    } else if (response.promptFeedback) {
+      throw new GoogleGenerativeAIResponseError(
+        `Text not available. ${formatBlockErrorMessage(response)}`,
+        response,
+      );
+    }
+    return "";
+  };
+  response.functionCall = () => {
+    if (response.candidates && response.candidates.length > 0) {
+      if (response.candidates.length > 1) {
+        console.warn(
+          `This response had ${response.candidates.length} ` +
+            `candidates. Returning function calls from the first candidate only. ` +
+            `Access response.candidates directly to use the other candidates.`,
+        );
+      }
+      if (hadBadFinishReason(response.candidates[0])) {
+        throw new GoogleGenerativeAIResponseError(
+          `${formatBlockErrorMessage(response)}`,
+          response,
+        );
+      }
+      console.warn(
+        `response.functionCall() is deprecated. ` +
+          `Use response.functionCalls() instead.`,
+      );
+      return getFunctionCalls(response)[0];
+    } else if (response.promptFeedback) {
+      throw new GoogleGenerativeAIResponseError(
+        `Function call not available. ${formatBlockErrorMessage(response)}`,
+        response,
+      );
+    }
+    return;
+  };
+  response.functionCalls = () => {
+    if (response.candidates && response.candidates.length > 0) {
+      if (response.candidates.length > 1) {
+        console.warn(
+          `This response had ${response.candidates.length} ` +
+            `candidates. Returning function calls from the first candidate only. ` +
+            `Access response.candidates directly to use the other candidates.`,
+        );
+      }
+      if (hadBadFinishReason(response.candidates[0])) {
+        throw new GoogleGenerativeAIResponseError(
+          `${formatBlockErrorMessage(response)}`,
+          response,
+        );
+      }
+      return getFunctionCalls(response);
+    } else if (response.promptFeedback) {
+      throw new GoogleGenerativeAIResponseError(
+        `Function call not available. ${formatBlockErrorMessage(response)}`,
+        response,
+      );
+    }
+    return;
+  };
+  return response;
+}
+function getText(response) {
+  var _a, _b, _c, _d;
+  const textStrings = [];
+  if (
+    (_b =
+      (_a = response.candidates) === null || _a === undefined
+        ? undefined
+        : _a[0].content) === null || _b === undefined
+      ? undefined
+      : _b.parts
+  ) {
+    for (const part of (_d =
+      (_c = response.candidates) === null || _c === undefined
+        ? undefined
+        : _c[0].content) === null || _d === undefined
+      ? undefined
+      : _d.parts) {
+      if (part.text) {
+        textStrings.push(part.text);
+      }
+      if (part.executableCode) {
+        textStrings.push(
+          "\n```" +
+            part.executableCode.language +
+            `
+` +
+            part.executableCode.code +
+            "\n```\n",
+        );
+      }
+      if (part.codeExecutionResult) {
+        textStrings.push(
+          "\n```\n" + part.codeExecutionResult.output + "\n```\n",
+        );
+      }
+    }
+  }
+  if (textStrings.length > 0) {
+    return textStrings.join("");
+  } else {
+    return "";
+  }
+}
+function getFunctionCalls(response) {
+  var _a, _b, _c, _d;
+  const functionCalls = [];
+  if (
+    (_b =
+      (_a = response.candidates) === null || _a === undefined
+        ? undefined
+        : _a[0].content) === null || _b === undefined
+      ? undefined
+      : _b.parts
+  ) {
+    for (const part of (_d =
+      (_c = response.candidates) === null || _c === undefined
+        ? undefined
+        : _c[0].content) === null || _d === undefined
+      ? undefined
+      : _d.parts) {
+      if (part.functionCall) {
+        functionCalls.push(part.functionCall);
+      }
+    }
+  }
+  if (functionCalls.length > 0) {
+    return functionCalls;
+  } else {
+    return;
+  }
+}
+var badFinishReasons = [
+  FinishReason.RECITATION,
+  FinishReason.SAFETY,
+  FinishReason.LANGUAGE,
+];
+function hadBadFinishReason(candidate) {
+  return (
+    !!candidate.finishReason &&
+    badFinishReasons.includes(candidate.finishReason)
+  );
+}
+function formatBlockErrorMessage(response) {
+  var _a, _b, _c;
+  let message = "";
+  if (
+    (!response.candidates || response.candidates.length === 0) &&
+    response.promptFeedback
+  ) {
+    message += "Response was blocked";
+    if (
+      (_a = response.promptFeedback) === null || _a === undefined
+        ? undefined
+        : _a.blockReason
+    ) {
+      message += ` due to ${response.promptFeedback.blockReason}`;
+    }
+    if (
+      (_b = response.promptFeedback) === null || _b === undefined
+        ? undefined
+        : _b.blockReasonMessage
+    ) {
+      message += `: ${response.promptFeedback.blockReasonMessage}`;
+    }
+  } else if (
+    (_c = response.candidates) === null || _c === undefined ? undefined : _c[0]
+  ) {
+    const firstCandidate = response.candidates[0];
+    if (hadBadFinishReason(firstCandidate)) {
+      message += `Candidate was blocked due to ${firstCandidate.finishReason}`;
+      if (firstCandidate.finishMessage) {
+        message += `: ${firstCandidate.finishMessage}`;
+      }
+    }
+  }
+  return message;
+}
+function __await(v) {
+  return this instanceof __await ? ((this.v = v), this) : new __await(v);
+}
+function __asyncGenerator(thisArg, _arguments, generator) {
+  if (!Symbol.asyncIterator)
+    throw new TypeError("Symbol.asyncIterator is not defined.");
+  var g = generator.apply(thisArg, _arguments || []),
+    i,
+    q = [];
+  return (
+    (i = {}),
+    verb("next"),
+    verb("throw"),
+    verb("return"),
+    (i[Symbol.asyncIterator] = function () {
+      return this;
+    }),
+    i
+  );
+  function verb(n) {
+    if (g[n])
+      i[n] = function (v) {
+        return new Promise(function (a, b) {
+          q.push([n, v, a, b]) > 1 || resume(n, v);
+        });
+      };
+  }
+  function resume(n, v) {
+    try {
+      step(g[n](v));
+    } catch (e) {
+      settle(q[0][3], e);
+    }
+  }
+  function step(r) {
+    r.value instanceof __await
+      ? Promise.resolve(r.value.v).then(fulfill, reject)
+      : settle(q[0][2], r);
+  }
+  function fulfill(value) {
+    resume("next", value);
+  }
+  function reject(value) {
+    resume("throw", value);
+  }
+  function settle(f, v) {
+    if ((f(v), q.shift(), q.length)) resume(q[0][0], q[0][1]);
+  }
+}
+var responseLineRE = /^data\: (.*)(?:\n\n|\r\r|\r\n\r\n)/;
+function processStream(response) {
+  const inputStream = response.body.pipeThrough(
+    new TextDecoderStream("utf8", { fatal: true }),
+  );
+  const responseStream = getResponseStream(inputStream);
+  const [stream1, stream2] = responseStream.tee();
+  return {
+    stream: generateResponseSequence(stream1),
+    response: getResponsePromise(stream2),
+  };
+}
+async function getResponsePromise(stream) {
+  const allResponses = [];
+  const reader = stream.getReader();
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) {
+      return addHelpers(aggregateResponses(allResponses));
+    }
+    allResponses.push(value);
+  }
+}
+function generateResponseSequence(stream) {
+  return __asyncGenerator(
+    this,
+    arguments,
+    function* generateResponseSequence_1() {
+      const reader = stream.getReader();
+      while (true) {
+        const { value, done } = yield __await(reader.read());
+        if (done) {
+          break;
+        }
+        yield yield __await(addHelpers(value));
+      }
+    },
+  );
+}
+function getResponseStream(inputStream) {
+  const reader = inputStream.getReader();
+  const stream = new ReadableStream({
+    start(controller) {
+      let currentText = "";
+      return pump();
+      function pump() {
+        return reader
+          .read()
+          .then(({ value, done }) => {
+            if (done) {
+              if (currentText.trim()) {
+                controller.error(
+                  new GoogleGenerativeAIError("Failed to parse stream"),
+                );
+                return;
+              }
+              controller.close();
+              return;
+            }
+            currentText += value;
+            let match = currentText.match(responseLineRE);
+            let parsedResponse;
+            while (match) {
+              try {
+                parsedResponse = JSON.parse(match[1]);
+              } catch (e) {
+                controller.error(
+                  new GoogleGenerativeAIError(
+                    `Error parsing JSON response: "${match[1]}"`,
+                  ),
+                );
+                return;
+              }
+              controller.enqueue(parsedResponse);
+              currentText = currentText.substring(match[0].length);
+              match = currentText.match(responseLineRE);
+            }
+            return pump();
+          })
+          .catch((e) => {
+            let err = e;
+            err.stack = e.stack;
+            if (err.name === "AbortError") {
+              err = new GoogleGenerativeAIAbortError(
+                "Request aborted when reading from the stream",
+              );
+            } else {
+              err = new GoogleGenerativeAIError(
+                "Error reading from the stream",
+              );
+            }
+            throw err;
+          });
+      }
+    },
+  });
+  return stream;
+}
+function aggregateResponses(responses) {
+  const lastResponse = responses[responses.length - 1];
+  const aggregatedResponse = {
+    promptFeedback:
+      lastResponse === null || lastResponse === undefined
+        ? undefined
+        : lastResponse.promptFeedback,
+  };
+  for (const response of responses) {
+    if (response.candidates) {
+      let candidateIndex = 0;
+      for (const candidate of response.candidates) {
+        if (!aggregatedResponse.candidates) {
+          aggregatedResponse.candidates = [];
+        }
+        if (!aggregatedResponse.candidates[candidateIndex]) {
+          aggregatedResponse.candidates[candidateIndex] = {
+            index: candidateIndex,
+          };
+        }
+        aggregatedResponse.candidates[candidateIndex].citationMetadata =
+          candidate.citationMetadata;
+        aggregatedResponse.candidates[candidateIndex].groundingMetadata =
+          candidate.groundingMetadata;
+        aggregatedResponse.candidates[candidateIndex].finishReason =
+          candidate.finishReason;
+        aggregatedResponse.candidates[candidateIndex].finishMessage =
+          candidate.finishMessage;
+        aggregatedResponse.candidates[candidateIndex].safetyRatings =
+          candidate.safetyRatings;
+        if (candidate.content && candidate.content.parts) {
+          if (!aggregatedResponse.candidates[candidateIndex].content) {
+            aggregatedResponse.candidates[candidateIndex].content = {
+              role: candidate.content.role || "user",
+              parts: [],
+            };
+          }
+          const newPart = {};
+          for (const part of candidate.content.parts) {
+            if (part.text) {
+              newPart.text = part.text;
+            }
+            if (part.functionCall) {
+              newPart.functionCall = part.functionCall;
+            }
+            if (part.executableCode) {
+              newPart.executableCode = part.executableCode;
+            }
+            if (part.codeExecutionResult) {
+              newPart.codeExecutionResult = part.codeExecutionResult;
+            }
+            if (Object.keys(newPart).length === 0) {
+              newPart.text = "";
+            }
+            aggregatedResponse.candidates[candidateIndex].content.parts.push(
+              newPart,
+            );
+          }
+        }
+      }
+      candidateIndex++;
+    }
+    if (response.usageMetadata) {
+      aggregatedResponse.usageMetadata = response.usageMetadata;
+    }
+  }
+  return aggregatedResponse;
+}
+async function generateContentStream(apiKey, model, params, requestOptions) {
+  const response = await makeModelRequest(
+    model,
+    Task.STREAM_GENERATE_CONTENT,
+    apiKey,
+    true,
+    JSON.stringify(params),
+    requestOptions,
+  );
+  return processStream(response);
+}
+async function generateContent(apiKey, model, params, requestOptions) {
+  const response = await makeModelRequest(
+    model,
+    Task.GENERATE_CONTENT,
+    apiKey,
+    false,
+    JSON.stringify(params),
+    requestOptions,
+  );
+  const responseJson = await response.json();
+  const enhancedResponse = addHelpers(responseJson);
+  return {
+    response: enhancedResponse,
+  };
+}
+function formatSystemInstruction(input) {
+  if (input == null) {
+    return;
+  } else if (typeof input === "string") {
+    return { role: "system", parts: [{ text: input }] };
+  } else if (input.text) {
+    return { role: "system", parts: [input] };
+  } else if (input.parts) {
+    if (!input.role) {
+      return { role: "system", parts: input.parts };
+    } else {
+      return input;
+    }
+  }
+}
+function formatNewContent(request) {
+  let newParts = [];
+  if (typeof request === "string") {
+    newParts = [{ text: request }];
+  } else {
+    for (const partOrString of request) {
+      if (typeof partOrString === "string") {
+        newParts.push({ text: partOrString });
+      } else {
+        newParts.push(partOrString);
+      }
+    }
+  }
+  return assignRoleToPartsAndValidateSendMessageRequest(newParts);
+}
+function assignRoleToPartsAndValidateSendMessageRequest(parts) {
+  const userContent = { role: "user", parts: [] };
+  const functionContent = { role: "function", parts: [] };
+  let hasUserContent = false;
+  let hasFunctionContent = false;
+  for (const part of parts) {
+    if ("functionResponse" in part) {
+      functionContent.parts.push(part);
+      hasFunctionContent = true;
+    } else {
+      userContent.parts.push(part);
+      hasUserContent = true;
+    }
+  }
+  if (hasUserContent && hasFunctionContent) {
+    throw new GoogleGenerativeAIError(
+      "Within a single message, FunctionResponse cannot be mixed with other type of part in the request for sending chat message.",
+    );
+  }
+  if (!hasUserContent && !hasFunctionContent) {
+    throw new GoogleGenerativeAIError(
+      "No content is provided for sending chat message.",
+    );
+  }
+  if (hasUserContent) {
+    return userContent;
+  }
+  return functionContent;
+}
+function formatCountTokensInput(params, modelParams) {
+  var _a;
+  let formattedGenerateContentRequest = {
+    model:
+      modelParams === null || modelParams === undefined
+        ? undefined
+        : modelParams.model,
+    generationConfig:
+      modelParams === null || modelParams === undefined
+        ? undefined
+        : modelParams.generationConfig,
+    safetySettings:
+      modelParams === null || modelParams === undefined
+        ? undefined
+        : modelParams.safetySettings,
+    tools:
+      modelParams === null || modelParams === undefined
+        ? undefined
+        : modelParams.tools,
+    toolConfig:
+      modelParams === null || modelParams === undefined
+        ? undefined
+        : modelParams.toolConfig,
+    systemInstruction:
+      modelParams === null || modelParams === undefined
+        ? undefined
+        : modelParams.systemInstruction,
+    cachedContent:
+      (_a =
+        modelParams === null || modelParams === undefined
+          ? undefined
+          : modelParams.cachedContent) === null || _a === undefined
+        ? undefined
+        : _a.name,
+    contents: [],
+  };
+  const containsGenerateContentRequest = params.generateContentRequest != null;
+  if (params.contents) {
+    if (containsGenerateContentRequest) {
+      throw new GoogleGenerativeAIRequestInputError(
+        "CountTokensRequest must have one of contents or generateContentRequest, not both.",
+      );
+    }
+    formattedGenerateContentRequest.contents = params.contents;
+  } else if (containsGenerateContentRequest) {
+    formattedGenerateContentRequest = Object.assign(
+      Object.assign({}, formattedGenerateContentRequest),
+      params.generateContentRequest,
+    );
+  } else {
+    const content = formatNewContent(params);
+    formattedGenerateContentRequest.contents = [content];
+  }
+  return { generateContentRequest: formattedGenerateContentRequest };
+}
+function formatGenerateContentInput(params) {
+  let formattedRequest;
+  if (params.contents) {
+    formattedRequest = params;
+  } else {
+    const content = formatNewContent(params);
+    formattedRequest = { contents: [content] };
+  }
+  if (params.systemInstruction) {
+    formattedRequest.systemInstruction = formatSystemInstruction(
+      params.systemInstruction,
+    );
+  }
+  return formattedRequest;
+}
+function formatEmbedContentInput(params) {
+  if (typeof params === "string" || Array.isArray(params)) {
+    const content = formatNewContent(params);
+    return { content };
+  }
+  return params;
+}
+var VALID_PART_FIELDS = [
+  "text",
+  "inlineData",
+  "functionCall",
+  "functionResponse",
+  "executableCode",
+  "codeExecutionResult",
+];
+var VALID_PARTS_PER_ROLE = {
+  user: ["text", "inlineData"],
+  function: ["functionResponse"],
+  model: ["text", "functionCall", "executableCode", "codeExecutionResult"],
+  system: ["text"],
+};
+function validateChatHistory(history) {
+  let prevContent = false;
+  for (const currContent of history) {
+    const { role, parts } = currContent;
+    if (!prevContent && role !== "user") {
+      throw new GoogleGenerativeAIError(
+        `First content should be with role 'user', got ${role}`,
+      );
+    }
+    if (!POSSIBLE_ROLES.includes(role)) {
+      throw new GoogleGenerativeAIError(
+        `Each item should include role field. Got ${role} but valid roles are: ${JSON.stringify(POSSIBLE_ROLES)}`,
+      );
+    }
+    if (!Array.isArray(parts)) {
+      throw new GoogleGenerativeAIError(
+        "Content should have 'parts' property with an array of Parts",
+      );
+    }
+    if (parts.length === 0) {
+      throw new GoogleGenerativeAIError(
+        "Each Content should have at least one part",
+      );
+    }
+    const countFields = {
+      text: 0,
+      inlineData: 0,
+      functionCall: 0,
+      functionResponse: 0,
+      fileData: 0,
+      executableCode: 0,
+      codeExecutionResult: 0,
+    };
+    for (const part of parts) {
+      for (const key of VALID_PART_FIELDS) {
+        if (key in part) {
+          countFields[key] += 1;
+        }
+      }
+    }
+    const validParts = VALID_PARTS_PER_ROLE[role];
+    for (const key of VALID_PART_FIELDS) {
+      if (!validParts.includes(key) && countFields[key] > 0) {
+        throw new GoogleGenerativeAIError(
+          `Content with role '${role}' can't contain '${key}' part`,
+        );
+      }
+    }
+    prevContent = true;
+  }
+}
+function isValidResponse(response) {
+  var _a;
+  if (response.candidates === undefined || response.candidates.length === 0) {
+    return false;
+  }
+  const content =
+    (_a = response.candidates[0]) === null || _a === undefined
+      ? undefined
+      : _a.content;
+  if (content === undefined) {
+    return false;
+  }
+  if (content.parts === undefined || content.parts.length === 0) {
+    return false;
+  }
+  for (const part of content.parts) {
+    if (part === undefined || Object.keys(part).length === 0) {
+      return false;
+    }
+    if (part.text !== undefined && part.text === "") {
+      return false;
+    }
+  }
+  return true;
+}
+var SILENT_ERROR = "SILENT_ERROR";
+
+class ChatSession {
+  constructor(apiKey, model, params, _requestOptions = {}) {
+    this.model = model;
+    this.params = params;
+    this._requestOptions = _requestOptions;
+    this._history = [];
+    this._sendPromise = Promise.resolve();
+    this._apiKey = apiKey;
+    if (params === null || params === undefined ? undefined : params.history) {
+      validateChatHistory(params.history);
+      this._history = params.history;
+    }
+  }
+  async getHistory() {
+    await this._sendPromise;
+    return this._history;
+  }
+  async sendMessage(request, requestOptions = {}) {
+    var _a, _b, _c, _d, _e, _f;
+    await this._sendPromise;
+    const newContent = formatNewContent(request);
+    const generateContentRequest = {
+      safetySettings:
+        (_a = this.params) === null || _a === undefined
+          ? undefined
+          : _a.safetySettings,
+      generationConfig:
+        (_b = this.params) === null || _b === undefined
+          ? undefined
+          : _b.generationConfig,
+      tools:
+        (_c = this.params) === null || _c === undefined ? undefined : _c.tools,
+      toolConfig:
+        (_d = this.params) === null || _d === undefined
+          ? undefined
+          : _d.toolConfig,
+      systemInstruction:
+        (_e = this.params) === null || _e === undefined
+          ? undefined
+          : _e.systemInstruction,
+      cachedContent:
+        (_f = this.params) === null || _f === undefined
+          ? undefined
+          : _f.cachedContent,
+      contents: [...this._history, newContent],
+    };
+    const chatSessionRequestOptions = Object.assign(
+      Object.assign({}, this._requestOptions),
+      requestOptions,
+    );
+    let finalResult;
+    this._sendPromise = this._sendPromise
+      .then(() =>
+        generateContent(
+          this._apiKey,
+          this.model,
+          generateContentRequest,
+          chatSessionRequestOptions,
+        ),
+      )
+      .then((result) => {
+        var _a2;
+        if (isValidResponse(result.response)) {
+          this._history.push(newContent);
+          const responseContent = Object.assign(
+            {
+              parts: [],
+              role: "model",
+            },
+            (_a2 = result.response.candidates) === null || _a2 === undefined
+              ? undefined
+              : _a2[0].content,
+          );
+          this._history.push(responseContent);
+        } else {
+          const blockErrorMessage = formatBlockErrorMessage(result.response);
+          if (blockErrorMessage) {
+            console.warn(
+              `sendMessage() was unsuccessful. ${blockErrorMessage}. Inspect response object for details.`,
+            );
+          }
+        }
+        finalResult = result;
+      })
+      .catch((e) => {
+        this._sendPromise = Promise.resolve();
+        throw e;
+      });
+    await this._sendPromise;
+    return finalResult;
+  }
+  async sendMessageStream(request, requestOptions = {}) {
+    var _a, _b, _c, _d, _e, _f;
+    await this._sendPromise;
+    const newContent = formatNewContent(request);
+    const generateContentRequest = {
+      safetySettings:
+        (_a = this.params) === null || _a === undefined
+          ? undefined
+          : _a.safetySettings,
+      generationConfig:
+        (_b = this.params) === null || _b === undefined
+          ? undefined
+          : _b.generationConfig,
+      tools:
+        (_c = this.params) === null || _c === undefined ? undefined : _c.tools,
+      toolConfig:
+        (_d = this.params) === null || _d === undefined
+          ? undefined
+          : _d.toolConfig,
+      systemInstruction:
+        (_e = this.params) === null || _e === undefined
+          ? undefined
+          : _e.systemInstruction,
+      cachedContent:
+        (_f = this.params) === null || _f === undefined
+          ? undefined
+          : _f.cachedContent,
+      contents: [...this._history, newContent],
+    };
+    const chatSessionRequestOptions = Object.assign(
+      Object.assign({}, this._requestOptions),
+      requestOptions,
+    );
+    const streamPromise = generateContentStream(
+      this._apiKey,
+      this.model,
+      generateContentRequest,
+      chatSessionRequestOptions,
+    );
+    this._sendPromise = this._sendPromise
+      .then(() => streamPromise)
+      .catch((_ignored) => {
+        throw new Error(SILENT_ERROR);
+      })
+      .then((streamResult) => streamResult.response)
+      .then((response) => {
+        if (isValidResponse(response)) {
+          this._history.push(newContent);
+          const responseContent = Object.assign(
+            {},
+            response.candidates[0].content,
+          );
+          if (!responseContent.role) {
+            responseContent.role = "model";
+          }
+          this._history.push(responseContent);
+        } else {
+          const blockErrorMessage = formatBlockErrorMessage(response);
+          if (blockErrorMessage) {
+            console.warn(
+              `sendMessageStream() was unsuccessful. ${blockErrorMessage}. Inspect response object for details.`,
+            );
+          }
+        }
+      })
+      .catch((e) => {
+        if (e.message !== SILENT_ERROR) {
+          console.error(e);
+        }
+      });
+    return streamPromise;
+  }
+}
+async function countTokens(apiKey, model, params, singleRequestOptions) {
+  const response = await makeModelRequest(
+    model,
+    Task.COUNT_TOKENS,
+    apiKey,
+    false,
+    JSON.stringify(params),
+    singleRequestOptions,
+  );
+  return response.json();
+}
+async function embedContent(apiKey, model, params, requestOptions) {
+  const response = await makeModelRequest(
+    model,
+    Task.EMBED_CONTENT,
+    apiKey,
+    false,
+    JSON.stringify(params),
+    requestOptions,
+  );
+  return response.json();
+}
+async function batchEmbedContents(apiKey, model, params, requestOptions) {
+  const requestsWithModel = params.requests.map((request) => {
+    return Object.assign(Object.assign({}, request), { model });
+  });
+  const response = await makeModelRequest(
+    model,
+    Task.BATCH_EMBED_CONTENTS,
+    apiKey,
+    false,
+    JSON.stringify({ requests: requestsWithModel }),
+    requestOptions,
+  );
+  return response.json();
+}
+
+class GenerativeModel {
+  constructor(apiKey, modelParams, _requestOptions = {}) {
+    this.apiKey = apiKey;
+    this._requestOptions = _requestOptions;
+    if (modelParams.model.includes("/")) {
+      this.model = modelParams.model;
+    } else {
+      this.model = `models/${modelParams.model}`;
+    }
+    this.generationConfig = modelParams.generationConfig || {};
+    this.safetySettings = modelParams.safetySettings || [];
+    this.tools = modelParams.tools;
+    this.toolConfig = modelParams.toolConfig;
+    this.systemInstruction = formatSystemInstruction(
+      modelParams.systemInstruction,
+    );
+    this.cachedContent = modelParams.cachedContent;
+  }
+  async generateContent(request, requestOptions = {}) {
+    var _a;
+    const formattedParams = formatGenerateContentInput(request);
+    const generativeModelRequestOptions = Object.assign(
+      Object.assign({}, this._requestOptions),
+      requestOptions,
+    );
+    return generateContent(
+      this.apiKey,
+      this.model,
+      Object.assign(
+        {
+          generationConfig: this.generationConfig,
+          safetySettings: this.safetySettings,
+          tools: this.tools,
+          toolConfig: this.toolConfig,
+          systemInstruction: this.systemInstruction,
+          cachedContent:
+            (_a = this.cachedContent) === null || _a === undefined
+              ? undefined
+              : _a.name,
+        },
+        formattedParams,
+      ),
+      generativeModelRequestOptions,
+    );
+  }
+  async generateContentStream(request, requestOptions = {}) {
+    var _a;
+    const formattedParams = formatGenerateContentInput(request);
+    const generativeModelRequestOptions = Object.assign(
+      Object.assign({}, this._requestOptions),
+      requestOptions,
+    );
+    return generateContentStream(
+      this.apiKey,
+      this.model,
+      Object.assign(
+        {
+          generationConfig: this.generationConfig,
+          safetySettings: this.safetySettings,
+          tools: this.tools,
+          toolConfig: this.toolConfig,
+          systemInstruction: this.systemInstruction,
+          cachedContent:
+            (_a = this.cachedContent) === null || _a === undefined
+              ? undefined
+              : _a.name,
+        },
+        formattedParams,
+      ),
+      generativeModelRequestOptions,
+    );
+  }
+  startChat(startChatParams) {
+    var _a;
+    return new ChatSession(
+      this.apiKey,
+      this.model,
+      Object.assign(
+        {
+          generationConfig: this.generationConfig,
+          safetySettings: this.safetySettings,
+          tools: this.tools,
+          toolConfig: this.toolConfig,
+          systemInstruction: this.systemInstruction,
+          cachedContent:
+            (_a = this.cachedContent) === null || _a === undefined
+              ? undefined
+              : _a.name,
+        },
+        startChatParams,
+      ),
+      this._requestOptions,
+    );
+  }
+  async countTokens(request, requestOptions = {}) {
+    const formattedParams = formatCountTokensInput(request, {
+      model: this.model,
+      generationConfig: this.generationConfig,
+      safetySettings: this.safetySettings,
+      tools: this.tools,
+      toolConfig: this.toolConfig,
+      systemInstruction: this.systemInstruction,
+      cachedContent: this.cachedContent,
+    });
+    const generativeModelRequestOptions = Object.assign(
+      Object.assign({}, this._requestOptions),
+      requestOptions,
+    );
+    return countTokens(
+      this.apiKey,
+      this.model,
+      formattedParams,
+      generativeModelRequestOptions,
+    );
+  }
+  async embedContent(request, requestOptions = {}) {
+    const formattedParams = formatEmbedContentInput(request);
+    const generativeModelRequestOptions = Object.assign(
+      Object.assign({}, this._requestOptions),
+      requestOptions,
+    );
+    return embedContent(
+      this.apiKey,
+      this.model,
+      formattedParams,
+      generativeModelRequestOptions,
+    );
+  }
+  async batchEmbedContents(batchEmbedContentRequest, requestOptions = {}) {
+    const generativeModelRequestOptions = Object.assign(
+      Object.assign({}, this._requestOptions),
+      requestOptions,
+    );
+    return batchEmbedContents(
+      this.apiKey,
+      this.model,
+      batchEmbedContentRequest,
+      generativeModelRequestOptions,
+    );
+  }
+}
+
+class GoogleGenerativeAI {
+  constructor(apiKey) {
+    this.apiKey = apiKey;
+  }
+  getGenerativeModel(modelParams, requestOptions) {
+    if (!modelParams.model) {
+      throw new GoogleGenerativeAIError(
+        `Must provide a model name. ` +
+          `Example: genai.getGenerativeModel({ model: 'my-model-name' })`,
+      );
+    }
+    return new GenerativeModel(this.apiKey, modelParams, requestOptions);
+  }
+  getGenerativeModelFromCachedContent(
+    cachedContent,
+    modelParams,
+    requestOptions,
+  ) {
+    if (!cachedContent.name) {
+      throw new GoogleGenerativeAIRequestInputError(
+        "Cached content must contain a `name` field.",
+      );
+    }
+    if (!cachedContent.model) {
+      throw new GoogleGenerativeAIRequestInputError(
+        "Cached content must contain a `model` field.",
+      );
+    }
+    const disallowedDuplicates = ["model", "systemInstruction"];
+    for (const key of disallowedDuplicates) {
+      if (
+        (modelParams === null || modelParams === undefined
+          ? undefined
+          : modelParams[key]) &&
+        cachedContent[key] &&
+        (modelParams === null || modelParams === undefined
+          ? undefined
+          : modelParams[key]) !== cachedContent[key]
+      ) {
+        if (key === "model") {
+          const modelParamsComp = modelParams.model.startsWith("models/")
+            ? modelParams.model.replace("models/", "")
+            : modelParams.model;
+          const cachedContentComp = cachedContent.model.startsWith("models/")
+            ? cachedContent.model.replace("models/", "")
+            : cachedContent.model;
+          if (modelParamsComp === cachedContentComp) {
+            continue;
+          }
+        }
+        throw new GoogleGenerativeAIRequestInputError(
+          `Different value for "${key}" specified in modelParams` +
+            ` (${modelParams[key]}) and cachedContent (${cachedContent[key]})`,
+        );
+      }
+    }
+    const modelParamsFromCache = Object.assign(Object.assign({}, modelParams), {
+      model: cachedContent.model,
+      tools: cachedContent.tools,
+      toolConfig: cachedContent.toolConfig,
+      systemInstruction: cachedContent.systemInstruction,
+      cachedContent,
+    });
+    return new GenerativeModel(
+      this.apiKey,
+      modelParamsFromCache,
+      requestOptions,
+    );
+  }
+}
+
+// options/options.src.js
+(function () {
+  let currentSection = "api";
+  const navItems = document.querySelectorAll(".sidebar-nav-item");
+  const sections = document.querySelectorAll(".content-section");
+  const saveBtns = document.querySelectorAll(".btn-save");
+  const apiKeyInput = document.getElementById("api-key");
+  const toggleApiKeyBtn = document.getElementById("toggle-api-key");
+  const validateKeyBtn = document.getElementById("btn-validate-key");
+  const apiStatus = document.getElementById("api-status");
+  const pName = document.getElementById("persona-name");
+  const pTitle = document.getElementById("persona-title");
+  const pCompany = document.getElementById("persona-company");
+  const pDesc = document.getElementById("persona-desc");
+  const pTone = document.getElementById("persona-tone");
+  const olUrl = document.getElementById("ol-url");
+  const olTagline = document.getElementById("ol-tagline");
+  const olFreq = document.getElementById("ol-freq");
+  const olFreqVal = document.getElementById("ol-freq-val");
+  const tMinFollowers = document.getElementById("target-min-followers");
+  const tMinEngagement = document.getElementById("target-min-engagement");
+  const sLimit = document.getElementById("safety-limit");
+  const sDelayMin = document.getElementById("safety-delay-min");
+  const sDelayMax = document.getElementById("safety-delay-max");
+  async function init() {
+    setupNavigation();
+    setupListeners();
+    await loadData();
+  }
+  function setupNavigation() {
+    navItems.forEach((item) => {
+      item.addEventListener("click", () => {
+        navItems.forEach((n) => n.classList.remove("active"));
+        item.classList.add("active");
+        const targetId = item.getAttribute("data-target");
+        sections.forEach((s) => s.classList.remove("active"));
+        document.getElementById(`section-${targetId}`).classList.add("active");
+        currentSection = targetId;
+      });
+    });
+  }
+  function setupListeners() {
+    toggleApiKeyBtn.addEventListener("click", () => {
+      if (apiKeyInput.type === "password") {
+        apiKeyInput.type = "text";
+        toggleApiKeyBtn.textContent = "\uD83D\uDD12";
+      } else {
+        apiKeyInput.type = "password";
+        toggleApiKeyBtn.textContent = "\uD83D\uDC41️";
+      }
+    });
+    validateKeyBtn.addEventListener("click", validateApiKey);
+    olFreq.addEventListener("input", (e) => {
+      olFreqVal.textContent = `${e.target.value}%`;
+    });
+    saveBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const section = btn.getAttribute("data-section");
+        saveSection(section);
+      });
+    });
+  }
+  async function loadData() {
+    try {
+      const data = await chrome.storage.local.get([
+        "xscroller_api_key",
+        "xscroller_persona",
+        "xscroller_openlabs",
+        "xscroller_targeting",
+        "xscroller_safety",
+      ]);
+      if (data.xscroller_api_key) {
+        apiKeyInput.value = data.xscroller_api_key;
+        apiStatus.className = "status-badge unchecked";
+        apiStatus.textContent = "Unchecked";
+      }
+      if (data.xscroller_persona) {
+        const p = data.xscroller_persona;
+        pName.value = p.name || "";
+        pTitle.value = p.title || "";
+        pCompany.value = p.company || "";
+        pDesc.value = p.description || "";
+        if (p.tone) pTone.value = p.tone;
+      }
+      if (data.xscroller_openlabs) {
+        const ol = data.xscroller_openlabs;
+        olUrl.value = ol.url || "";
+        olTagline.value = ol.tagline || "";
+        olFreq.value = ol.promotionFrequency || 30;
+        olFreqVal.textContent = `${olFreq.value}%`;
+      }
+      if (data.xscroller_targeting) {
+        const t = data.xscroller_targeting;
+        tMinFollowers.value = t.minFollowers || 0;
+        tMinEngagement.value = t.minEngagement || 0;
+      }
+      if (data.xscroller_safety) {
+        const s = data.xscroller_safety;
+        sLimit.value = s.dailyLimit || 20;
+        sDelayMin.value = s.delayMin || 30;
+        sDelayMax.value = s.delayMax || 120;
+      }
+    } catch (e) {
+      console.error("Failed to load settings", e);
+    }
+  }
+  async function validateApiKey() {
+    const key = apiKeyInput.value.trim();
+    if (!key) return;
+    apiStatus.className = "status-badge checking";
+    apiStatus.textContent = "Checking...";
+    try {
+      const genAI = new GoogleGenerativeAI(key);
+      const model = genAI.getGenerativeModel({
+        model: "gemini-3-flash-preview",
+      });
+      const result = await model.generateContent({
+        contents: [{ role: "user", parts: [{ text: "Hello" }] }],
+      });
+      const response = await result.response;
+      if (response && response.text()) {
+        apiStatus.className = "status-badge valid";
+        apiStatus.textContent = "Valid";
+        saveSection("api");
+      } else {
+        apiStatus.className = "status-badge invalid";
+        apiStatus.textContent = "Invalid Key";
+      }
+    } catch (e) {
+      console.error(e);
+      apiStatus.className = "status-badge invalid";
+      apiStatus.textContent = "Network Error";
+    }
+  }
+  async function saveSection(section) {
+    try {
+      let updates = {};
+      if (section === "api") {
+        updates["xscroller_api_key"] = apiKeyInput.value.trim();
+      } else if (section === "persona") {
+        updates["xscroller_persona"] = {
+          name: pName.value.trim(),
+          title: pTitle.value.trim(),
+          company: pCompany.value.trim(),
+          description: pDesc.value.trim(),
+          tone: pTone.value,
+          expertise: [],
+          customPrompt: "",
+        };
+      } else if (section === "openlabs") {
+        updates["xscroller_openlabs"] = {
+          url: olUrl.value.trim(),
+          tagline: olTagline.value.trim(),
+          features: [],
+          promotionFrequency: parseInt(olFreq.value, 10),
+        };
+      } else if (section === "targeting") {
+        updates["xscroller_targeting"] = {
+          keywords: [],
+          avoidKeywords: [],
+          minFollowers: parseInt(tMinFollowers.value, 10) || 0,
+          minEngagement: parseInt(tMinEngagement.value, 10) || 0,
+        };
+      } else if (section === "safety") {
+        updates["xscroller_safety"] = {
+          dailyLimit: parseInt(sLimit.value, 10) || 20,
+          delayMin: parseInt(sDelayMin.value, 10) || 30,
+          delayMax: parseInt(sDelayMax.value, 10) || 120,
+          blacklistedUsers: [],
+        };
+      }
+      await chrome.storage.local.set(updates);
+      try {
+        chrome.runtime.sendMessage({ type: "UPDATE_SETTINGS" });
+      } catch (e) {}
+      const btn = document.querySelector(
+        `.btn-save[data-section="${section}"]`,
+      );
+      if (btn) {
+        const originalText = btn.textContent;
+        btn.textContent = "Saved! ✅";
+        btn.classList.replace("btn-primary", "btn-success");
+        setTimeout(() => {
+          btn.textContent = originalText;
+          btn.classList.replace("btn-success", "btn-primary");
+        }, 2000);
+      }
+    } catch (e) {
+      console.error(`Failed to save ${section}`, e);
+      alert("Error saving settings");
+    }
+  }
+  document.addEventListener("DOMContentLoaded", init);
+})();

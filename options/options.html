@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>XScroller Dashboard</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="dashboard">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <div class="sidebar-logo-icon">X</div>
+          <div class="sidebar-logo-text">
+            <h1>XScroller</h1>
+            <span>Dashboard</span>
+          </div>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="sidebar-nav-item active" data-target="api">
+          <span class="nav-icon">🔑</span> API Settings
+        </div>
+        <div class="sidebar-nav-item" data-target="persona">
+          <span class="nav-icon">👤</span> Persona
+        </div>
+        <div class="sidebar-nav-item" data-target="openlabs">
+          <span class="nav-icon">🏢</span> OpenLabs
+        </div>
+        <div class="sidebar-nav-item" data-target="targeting">
+          <span class="nav-icon">🎯</span> Targeting
+        </div>
+        <div class="sidebar-nav-item" data-target="safety">
+          <span class="nav-icon">🛡️</span> Safety
+        </div>
+        <div class="sidebar-nav-item" data-target="queue">
+          <span class="nav-icon">📋</span> Reply Queue
+        </div>
+        <div class="sidebar-nav-item" data-target="log">
+          <span class="nav-icon">📊</span> Activity Log
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <p>XScroller v1.0.0</p>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- API Settings -->
+      <section id="section-api" class="content-section active">
+        <h2 class="section-title">API Settings</h2>
+        <p class="section-subtitle">Configure your Gemini API key for AI-powered replies.</p>
+        
+        <div class="glass-card">
+          <h3 class="card-title"><span class="card-icon">🔑</span> Gemini API Key</h3>
+          <div class="form-group">
+            <label for="api-key">API Key</label>
+            <div class="password-wrapper">
+              <input type="password" id="api-key" class="form-input" placeholder="AIzaSy...">
+              <button type="button" class="toggle-password" id="toggle-api-key">👁️</button>
+            </div>
+            <p class="form-hint">Get a free key from <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--accent)">Google AI Studio</a>.</p>
+          </div>
+          
+          <div class="inline-row">
+            <button type="button" class="btn btn-secondary" id="btn-validate-key">Validate Key</button>
+            <span id="api-status" class="status-badge unchecked">Unchecked</span>
+          </div>
+        </div>
+        <div class="save-bar">
+          <button type="button" class="btn btn-primary btn-save" data-section="api">Save Settings</button>
+        </div>
+      </section>
+
+      <!-- Persona -->
+      <section id="section-persona" class="content-section">
+        <h2 class="section-title">Persona</h2>
+        <p class="section-subtitle">Define who the AI acts as when generating replies.</p>
+        <div class="glass-card">
+          <div class="form-group">
+            <label for="persona-name">Name</label>
+            <input type="text" id="persona-name" class="form-input" placeholder="e.g. Bashar">
+          </div>
+          <div class="form-group">
+            <label for="persona-title">Title / Role</label>
+            <input type="text" id="persona-title" class="form-input" placeholder="e.g. Founder">
+          </div>
+          <div class="form-group">
+            <label for="persona-company">Company</label>
+            <input type="text" id="persona-company" class="form-input" placeholder="e.g. OpenLabs">
+          </div>
+          <div class="form-group">
+            <label for="persona-desc">Description</label>
+            <textarea id="persona-desc" class="form-textarea" placeholder="Describe your background and what you do..."></textarea>
+          </div>
+          <div class="form-group">
+            <label for="persona-tone">Tone</label>
+            <select id="persona-tone" class="form-select">
+              <option value="casual">Casual</option>
+              <option value="professional">Professional</option>
+              <option value="witty">Witty</option>
+              <option value="sarcastic">Sarcastic</option>
+            </select>
+          </div>
+        </div>
+        <div class="save-bar">
+          <button type="button" class="btn btn-primary btn-save" data-section="persona">Save Settings</button>
+        </div>
+      </section>
+
+      <!-- OpenLabs -->
+      <section id="section-openlabs" class="content-section">
+        <h2 class="section-title">OpenLabs</h2>
+        <p class="section-subtitle">Configure how OpenLabs is marketed in your replies.</p>
+        <div class="glass-card">
+          <div class="form-group">
+            <label for="ol-url">Website URL</label>
+            <input type="text" id="ol-url" class="form-input" placeholder="https://openlabs.dev">
+          </div>
+          <div class="form-group">
+            <label for="ol-tagline">Tagline</label>
+            <input type="text" id="ol-tagline" class="form-input" placeholder="Building the future of developer tools">
+          </div>
+          <div class="form-group">
+            <label for="ol-freq">Promotion Frequency</label>
+            <div class="slider-wrapper">
+              <input type="range" id="ol-freq" class="slider" min="0" max="100" value="30">
+              <span id="ol-freq-val" class="slider-value">30%</span>
+            </div>
+            <p class="form-hint">Percentage of replies that will naturally mention OpenLabs.</p>
+          </div>
+        </div>
+        <div class="save-bar">
+          <button type="button" class="btn btn-primary btn-save" data-section="openlabs">Save Settings</button>
+        </div>
+      </section>
+
+      <!-- Targeting -->
+      <section id="section-targeting" class="content-section">
+        <h2 class="section-title">Targeting</h2>
+        <p class="section-subtitle">Define what kind of tweets you want to reply to.</p>
+        <div class="glass-card">
+          <div class="form-group">
+            <label for="target-min-followers">Minimum Author Followers</label>
+            <input type="number" id="target-min-followers" class="form-input" value="0">
+          </div>
+          <div class="form-group">
+            <label for="target-min-engagement">Minimum Engagement (Likes+RTs)</label>
+            <input type="number" id="target-min-engagement" class="form-input" value="0">
+          </div>
+        </div>
+        <div class="save-bar">
+          <button type="button" class="btn btn-primary btn-save" data-section="targeting">Save Settings</button>
+        </div>
+      </section>
+
+      <!-- Safety -->
+      <section id="section-safety" class="content-section">
+        <h2 class="section-title">Safety</h2>
+        <p class="section-subtitle">Protect your account from bans and rate limits.</p>
+        <div class="glass-card">
+          <div class="form-group">
+            <label for="safety-limit">Daily Reply Limit</label>
+            <input type="number" id="safety-limit" class="form-input" value="20">
+          </div>
+          <div class="form-group">
+            <label for="safety-delay-min">Min Delay (seconds)</label>
+            <input type="number" id="safety-delay-min" class="form-input" value="30">
+          </div>
+          <div class="form-group">
+            <label for="safety-delay-max">Max Delay (seconds)</label>
+            <input type="number" id="safety-delay-max" class="form-input" value="120">
+          </div>
+        </div>
+        <div class="save-bar">
+          <button type="button" class="btn btn-primary btn-save" data-section="safety">Save Settings</button>
+        </div>
+      </section>
+
+      <!-- Queue and Log (Simplified placeholders for now) -->
+      <section id="section-queue" class="content-section">
+        <h2 class="section-title">Reply Queue</h2>
+        <p class="section-subtitle">Pending replies to review.</p>
+        <div class="glass-card empty-state">
+          <div class="empty-state-icon">✅</div>
+          <div class="empty-state-text">No pending replies.</div>
+        </div>
+      </section>
+
+      <section id="section-log" class="content-section">
+        <h2 class="section-title">Activity Log</h2>
+        <p class="section-subtitle">Recent actions performed by XScroller.</p>
+        <div class="glass-card empty-state">
+          <div class="empty-state-text">No recent activity.</div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+  <script src="options.js"></script>
+</body>
+</html>

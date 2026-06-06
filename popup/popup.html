@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=380, initial-scale=1.0">
+  <title>XScroller — Smart Twitter Automation</title>
+  <meta name="description" content="XScroller popup control panel for Twitter automation.">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div id="popup-container" class="popup-container">
+
+    <!-- ===== HEADER ===== -->
+    <header id="popup-header" class="header">
+      <div class="header-left">
+        <div class="logo-icon">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="14" cy="14" r="13" stroke="#1DA1F2" stroke-width="2" fill="none"/>
+            <path d="M8 14 L12 18 L20 10" stroke="#1DA1F2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          </svg>
+        </div>
+        <div class="header-text">
+          <h1 id="app-title" class="app-title">XScroller</h1>
+          <span id="app-subtitle" class="app-subtitle">Smart Automation</span>
+        </div>
+      </div>
+      <span id="version-badge" class="version-badge">v1.0</span>
+    </header>
+
+    <!-- ===== MASTER TOGGLE ===== -->
+    <section id="toggle-section" class="section toggle-section">
+      <div class="toggle-row">
+        <div class="toggle-label-group">
+          <span id="toggle-label" class="toggle-label">Extension</span>
+          <span id="toggle-state-text" class="toggle-state-text off">OFF</span>
+        </div>
+        <label id="master-toggle" class="toggle-switch" for="master-toggle-input">
+          <input type="checkbox" id="master-toggle-input">
+          <span class="toggle-track">
+            <span class="toggle-thumb"></span>
+          </span>
+        </label>
+      </div>
+    </section>
+
+    <!-- ===== STATUS INDICATOR ===== -->
+    <section id="status-section" class="section status-section">
+      <div class="status-indicator" id="status-indicator">
+        <span class="status-dot" id="status-dot"></span>
+        <span class="status-text" id="status-text">OFF</span>
+      </div>
+    </section>
+
+    <!-- ===== STATS CARDS ===== -->
+    <section id="stats-section" class="section stats-section">
+      <div class="stats-row">
+        <div class="stat-card" id="stat-replies-today">
+          <div class="stat-icon">💬</div>
+          <div class="stat-value">
+            <span id="replies-today-count" class="stat-number">0</span>
+            <span class="stat-separator">/</span>
+            <span id="replies-today-limit" class="stat-limit">50</span>
+          </div>
+          <div class="stat-label">Replies Today</div>
+        </div>
+        <div class="stat-card" id="stat-total-replies">
+          <div class="stat-icon">📨</div>
+          <div class="stat-value">
+            <span id="total-replies-count" class="stat-number">0</span>
+          </div>
+          <div class="stat-label">Total Replies</div>
+        </div>
+        <div class="stat-card" id="stat-tweets-scanned">
+          <div class="stat-icon">🔍</div>
+          <div class="stat-value">
+            <span id="tweets-scanned-count" class="stat-number">0</span>
+          </div>
+          <div class="stat-label">Scanned</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SPEED CONTROL ===== -->
+    <section id="speed-section" class="section speed-section">
+      <div class="section-header">
+        <span class="section-title">Scroll Speed</span>
+        <span class="speed-value-display" id="speed-value-display">5</span>
+      </div>
+      <div class="speed-slider-wrapper">
+        <span class="speed-label-min">1</span>
+        <input
+          type="range"
+          id="speed-slider"
+          class="speed-slider"
+          min="1"
+          max="10"
+          value="5"
+          step="1"
+        >
+        <span class="speed-label-max">10</span>
+      </div>
+    </section>
+
+    <!-- ===== MODE SELECTOR ===== -->
+    <section id="mode-section" class="section mode-section">
+      <div class="section-header">
+        <span class="section-title">Mode</span>
+      </div>
+      <div class="mode-selector" id="mode-selector">
+        <button class="mode-btn active" data-mode="auto" id="mode-auto">
+          <span class="mode-dot auto"></span>
+          <span class="mode-name">Auto</span>
+          <span class="mode-desc">Scroll + Reply</span>
+        </button>
+        <button class="mode-btn" data-mode="review" id="mode-review">
+          <span class="mode-dot review"></span>
+          <span class="mode-name">Review</span>
+          <span class="mode-desc">Queue Replies</span>
+        </button>
+        <button class="mode-btn" data-mode="scroll-only" id="mode-scroll-only">
+          <span class="mode-dot scroll-only"></span>
+          <span class="mode-name">Scroll</span>
+          <span class="mode-desc">No Replies</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ===== QUICK ACTIONS ===== -->
+    <section id="actions-section" class="section actions-section">
+      <div class="actions-row">
+        <button class="btn btn-primary" id="btn-dashboard">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="1" y="1" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+            <rect x="9" y="1" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+            <rect x="1" y="9" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+            <rect x="9" y="9" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+          </svg>
+          Dashboard
+        </button>
+        <button class="btn btn-secondary" id="btn-twitter">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9.52 6.775 15.481 0h-1.412L8.895 5.882 4.764 0H0l6.247 9.093L0 16h1.412l5.461-6.348L11.236 16H16L9.52 6.775Zm-1.933 2.247-.633-.905L1.92 1.04h2.168l4.065 5.814.633.905 5.284 7.558h-2.169L7.587 9.022Z"/>
+          </svg>
+          Open X
+        </button>
+      </div>
+    </section>
+
+    <!-- ===== FOOTER ===== -->
+    <footer id="popup-footer" class="footer">
+      <span class="footer-text">Powered by <span class="footer-highlight">Gemini AI</span></span>
+    </footer>
+
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

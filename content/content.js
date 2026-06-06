@@ -336,7 +336,21 @@
       }
       updateIndicator();
 
-      // 10. Request AI-generated reply from background
+      // 10. Open the reply dialog FIRST so the DOM node is fresh and Twitter knows exactly which tweet we are replying to.
+      // If we wait for the AI first, Twitter might recycle the DOM node and open a generic "New Post" modal instead!
+      console.log(LOG_PREFIX, 'Opening reply box for tweet ' + tweet.id + '\u2026');
+      var replyBox = null;
+      
+      if (state.mode === 'auto') {
+        replyBox = await window.XReplier.openReplyBox(tweet.element);
+        if (!replyBox) {
+          console.warn(LOG_PREFIX, 'Could not open reply box, resuming scroll.');
+          resumeAfterProcessing();
+          return;
+        }
+      }
+
+      // 11. Request AI-generated reply from background
       console.log(LOG_PREFIX, 'Generating reply for tweet ' + tweet.id + ' by ' + tweet.authorHandle + '\u2026');
       var replyText = null;
 
@@ -362,18 +376,29 @@
       }
 
       if (!replyText) {
-        console.log(LOG_PREFIX, 'No reply text available, resuming scroll.');
+        console.log(LOG_PREFIX, 'No reply text available, closing box and resuming scroll.');
+        if (replyBox) await window.XReplier.closeReplyBox();
         resumeAfterProcessing();
         return;
       }
 
-      // 11. Handle based on mode
+      // 12. Handle based on mode
       if (state.mode === 'auto') {
-        // Send reply directly
         console.log(LOG_PREFIX, 'Auto-replying to tweet ' + tweet.id + '\u2026');
         updateIndicator();
 
-        var result = await window.XReplier.sendReply(tweet.element, replyText);
+        // Check if reply dialog is still open
+        var dialogOpen = document.querySelector('[data-testid="tweetTextarea_0"]') || 
+                         document.querySelector('[role="textbox"][contenteditable="true"]');
+        
+        if (!dialogOpen) {
+           console.warn(LOG_PREFIX, 'Reply dialog closed unexpectedly while generating reply.');
+           resumeAfterProcessing();
+           return;
+        }
+
+        // We already opened it, so just type and submit
+        var result = await window.XReplier.sendReplyAlreadyOpen(replyBox, replyText);
 
         if (result.success) {
           console.log(LOG_PREFIX, 'Successfully replied to tweet ' + tweet.id + '.');
@@ -381,22 +406,17 @@
           state.stats.totalReplies++;
           await saveStats();
 
-          // Mark as replied
           if (window.XStorage && typeof window.XStorage.markReplied === 'function') {
             await window.XStorage.markReplied(tweet.id);
           }
 
-          // Log activity
           logActivity('reply_sent', tweet, replyText);
         } else {
           console.warn(LOG_PREFIX, 'Reply failed for tweet ' + tweet.id + ':', result.error);
-          // Try to close any open dialog
           await window.XReplier.closeReplyBox();
         }
       } else if (state.mode === 'review') {
-        // Queue for user review
         console.log(LOG_PREFIX, 'Queuing reply for review - tweet ' + tweet.id + '.');
-
         try {
           chrome.runtime.sendMessage({
             type: 'QUEUE_REPLY',
@@ -414,7 +434,7 @@
         }
       }
 
-      // 12. Safety delay before resuming
+      // 13. Safety delay before resuming
       var delayMs = randomBetween(
         (state.safety.delayMin || 30) * 1000,
         (state.safety.delayMax || 90) * 1000

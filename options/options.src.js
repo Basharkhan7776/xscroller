@@ -141,8 +141,8 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
       if (data.xscroller_safety) {
         const s = data.xscroller_safety;
         sLimit.value = s.dailyLimit || 20;
-        sDelayMin.value = s.delayMin || 30;
-        sDelayMax.value = s.delayMax || 120;
+        sDelayMin.value = s.delayMin || 5;
+        sDelayMax.value = s.delayMax || 10;
       }
     } catch (e) {
       console.error("Failed to load settings", e);

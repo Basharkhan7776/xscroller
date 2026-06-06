@@ -28,8 +28,8 @@
     },
     safety: {
       dailyLimit: 50,
-      delayMin: 30,
-      delayMax: 90,
+      delayMin: 5,
+      delayMax: 10,
       blacklistedUsers: [],
     },
     stats: {

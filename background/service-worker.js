@@ -61,8 +61,8 @@ const DEFAULTS = {
   },
   [KEYS.SAFETY]: {
     dailyLimit: 20,
-    delayMin: 30,
-    delayMax: 120,
+    delayMin: 5,
+    delayMax: 10,
     blacklistedUsers: [],
   },
   [KEYS.STATS]: {

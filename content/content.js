@@ -284,6 +284,12 @@
       state.stats.tweetsScanned++;
       await saveStats();
 
+      // 3.5 Skip if contains a video
+      if (tweet.hasVideo) {
+        console.log(LOG_PREFIX, 'Skipping tweet ' + tweet.id + ' because it contains a video.');
+        return;
+      }
+
       // 4. Check blacklisted users
       const handle = (tweet.authorHandle || '').toLowerCase().replace('@', '');
       const blacklisted = state.safety.blacklistedUsers.map(function (u) {

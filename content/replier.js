@@ -112,15 +112,6 @@
       })();
     },
 
-    /**
-     * Type text into Twitter's reply composer with human-like delays.
-     * Uses document.execCommand('insertText') so that Twitter's
-     * internal React state stays in sync.
-     *
-     * @param {HTMLElement} replyBox - The contenteditable element
-     * @param {string} text - Text to type
-     * @returns {Promise<void>}
-     */
     typeReply: function (replyBox, text) {
       var self = this;
       return (async function () {
@@ -136,24 +127,14 @@
           // Small delay after focus
           await self.randomDelay(100, 300);
 
-          for (var i = 0; i < text.length; i++) {
-            var char = text[i];
+          // Insert text at once instead of char by char to prevent duplicating prefixes
+          document.execCommand('insertText', false, text);
+          
+          // Force React to recognize the change
+          replyBox.dispatchEvent(new Event('input', { bubbles: true }));
+          replyBox.dispatchEvent(new Event('change', { bubbles: true }));
 
-            // Insert each character using execCommand so React's
-            // controlled state updates properly
-            document.execCommand('insertText', false, char);
-
-            // Random typing delay: 30-80ms per character
-            var delay = randInt(30, 80);
-            await new Promise(function (r) { setTimeout(r, delay); });
-
-            // Occasional longer pause to simulate thinking (every ~20 chars)
-            if (i > 0 && i % randInt(15, 25) === 0) {
-              await self.randomDelay(100, 300);
-            }
-          }
-
-          console.log('[XScroller] Typed ' + text.length + ' characters into reply box.');
+          console.log('[XScroller] Pasted ' + text.length + ' characters into reply box.');
         } catch (err) {
           console.error('[XScroller] typeReply error:', err);
         }
@@ -161,27 +142,50 @@
     },
 
     /**
-     * Click the tweet/reply submit button.
+     * Click the tweet/reply submit button or press Ctrl+Enter.
      * @returns {Promise<boolean>} true if the button was found and clicked
      */
-    submitReply: function () {
+    submitReply: function (replyBox) {
       var self = this;
       return (async function () {
         try {
-          // Twitter uses different test-ids depending on context:
-          //   - Inline reply: data-testid="tweetButtonInline"
-          //   - Modal reply:  data-testid="tweetButton"
-          var submitBtn =
-            document.querySelector('[data-testid="tweetButtonInline"]') ||
-            document.querySelector('[data-testid="tweetButton"]');
-
-          if (!submitBtn) {
-            console.warn('[XScroller] Submit button not found.');
-            return false;
+          if (replyBox) {
+            // First attempt: simulate Ctrl+Enter
+            replyBox.dispatchEvent(new KeyboardEvent('keydown', {
+              bubbles: true, cancelable: true,
+              key: 'Enter', code: 'Enter', keyCode: 13,
+              ctrlKey: true
+            }));
+            console.log('[XScroller] Dispatched Ctrl+Enter on reply box.');
+            await self.randomDelay(300, 600);
           }
 
-          submitBtn.click();
-          console.log('[XScroller] Reply submitted.');
+          // Second attempt: Fallback to clicking the button (wait for it to become enabled)
+          var submitBtn = null;
+          var elapsed = 0;
+          while (elapsed < 3000) {
+            submitBtn = document.querySelector('[data-testid="tweetButtonInline"]') || 
+                        document.querySelector('[data-testid="tweetButton"]');
+            
+            if (submitBtn && !submitBtn.disabled && submitBtn.getAttribute('aria-disabled') !== 'true') {
+              break; // Button is enabled!
+            }
+            await self.randomDelay(200, 300);
+            elapsed += 250;
+          }
+
+          if (!submitBtn) {
+            console.warn('[XScroller] Submit button not found (it may have already submitted via Ctrl+Enter).');
+            return true; 
+          }
+
+          if (!submitBtn.disabled && submitBtn.getAttribute('aria-disabled') !== 'true') {
+            submitBtn.click();
+            console.log('[XScroller] Reply submitted via button click.');
+          } else {
+            console.warn('[XScroller] Submit button still disabled after waiting. Forcing click anyway.');
+            submitBtn.click();
+          }
 
           // Brief pause to let Twitter process
           await self.randomDelay(500, 1000);
@@ -223,10 +227,38 @@
           await self.randomDelay(300, 800);
 
           // 5. Submit
-          var submitted = await self.submitReply();
+          var submitted = await self.submitReply(replyBox);
+
+          // 6. Verify if it closed
+          await self.randomDelay(800, 1200);
+
+          // Check if the submit button or text area is still visible (meaning it didn't submit)
+          var stillOpenBtn = document.querySelector('[data-testid="tweetButtonInline"]') || 
+                             document.querySelector('[data-testid="tweetButton"]');
+                             
+          if (stillOpenBtn && !stillOpenBtn.disabled && stillOpenBtn.getAttribute('aria-disabled') !== 'true') {
+            console.log('[XScroller] Reply window seems still open. Trying Ctrl+Enter again...');
+            replyBox.dispatchEvent(new KeyboardEvent('keydown', {
+              bubbles: true, cancelable: true,
+              key: 'Enter', code: 'Enter', keyCode: 13,
+              ctrlKey: true, metaKey: true
+            }));
+            
+            await self.randomDelay(1000, 1500);
+            
+            // Check one last time
+            stillOpenBtn = document.querySelector('[data-testid="tweetButtonInline"]') || 
+                           document.querySelector('[data-testid="tweetButton"]');
+            if (stillOpenBtn) {
+              console.warn('[XScroller] Reply window STILL open. Pressing Escape to clear it so we can resume scrolling.');
+              await self.closeReplyBox();
+              return { success: false, error: 'Reply stuck, escaped out.' };
+            }
+          }
+
           return {
             success: submitted,
-            error: submitted ? null : 'Could not find submit button',
+            error: submitted ? null : 'Could not submit reply',
           };
         } catch (err) {
           console.error('[XScroller] sendReply error:', err);

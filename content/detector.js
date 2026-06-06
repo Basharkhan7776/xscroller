@@ -153,12 +153,16 @@
         var retweets = getMetric(articleElement, 'retweet');
         var replies = getMetric(articleElement, 'reply');
 
+        /* ---------- Video Check ---------- */
+        var hasVideo = !!(articleElement.querySelector('video') || articleElement.querySelector('[data-testid="videoPlayer"]'));
+
         return {
           id: id,
           text: text,
           author: author,
           authorHandle: authorHandle,
           metrics: { likes: likes, retweets: retweets, replies: replies },
+          hasVideo: hasVideo,
           element: articleElement,
         };
       } catch (err) {

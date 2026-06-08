@@ -144,7 +144,15 @@
           // Fallback: if paste didn't insert text into the DOM, use execCommand as backup
           await self.randomDelay(100, 200);
           if (replyBox.innerText.indexOf(text.substring(0, 5)) === -1) {
-             document.execCommand('insertText', false, text);
+             var lines = text.split('\n');
+             for (var i = 0; i < lines.length; i++) {
+                if (lines[i].length > 0) {
+                   document.execCommand('insertText', false, lines[i]);
+                }
+                if (i < lines.length - 1) {
+                   document.execCommand('insertLineBreak');
+                }
+             }
              replyBox.dispatchEvent(new Event('input', { bubbles: true }));
           }
 

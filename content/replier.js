@@ -127,6 +127,8 @@
       return (async function () {
         if (!replyBox || !text) return;
         try {
+          console.log('[XScroller] Generated reply text:\n' + text);
+          
           replyBox.focus();
           replyBox.dispatchEvent(new FocusEvent('focus', { bubbles: true }));
           await self.randomDelay(100, 300);
@@ -134,6 +136,7 @@
           // Use DataTransfer to simulate a real paste. This wakes up Draft.js/Lexical.
           var dataTransfer = new DataTransfer();
           dataTransfer.setData('text/plain', text);
+          dataTransfer.setData('text/html', text.replace(/\n/g, '<br>'));
           var pasteEvent = new ClipboardEvent('paste', {
             clipboardData: dataTransfer,
             bubbles: true,
@@ -141,9 +144,17 @@
           });
           replyBox.dispatchEvent(pasteEvent);
 
-          // Fallback: if paste didn't insert text into the DOM, use execCommand as backup
+          // Fallback: if paste didn't insert the full text into the DOM, use execCommand
           await self.randomDelay(100, 200);
-          if (replyBox.innerText.indexOf(text.substring(0, 5)) === -1) {
+          
+          var currentText = (replyBox.innerText || '').replace(/\u200B/g, '').trim();
+          var expectedText = text.trim();
+          
+          if (currentText.length < expectedText.length - 10) {
+             // Clear any partially pasted text
+             document.execCommand('selectAll', false, null);
+             document.execCommand('delete', false, null);
+             
              var lines = text.split('\n');
              for (var i = 0; i < lines.length; i++) {
                 if (lines[i].length > 0) {
@@ -153,8 +164,12 @@
                    document.execCommand('insertLineBreak');
                 }
              }
-             replyBox.dispatchEvent(new Event('input', { bubbles: true }));
           }
+          
+          // Hack to force Lexical to register the input and enable the button
+          replyBox.dispatchEvent(new Event('input', { bubbles: true }));
+          replyBox.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, key: ' ', code: 'Space', keyCode: 32 }));
+          replyBox.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: ' ', code: 'Space', keyCode: 32 }));
 
           console.log('[XScroller] Inserted text into reply box.');
         } catch (err) {

@@ -1,4 +1,3 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
 
 (function () {
   "use strict";
@@ -158,25 +157,27 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
     apiStatus.textContent = "Checking...";
 
     try {
-      const genAI = new GoogleGenerativeAI(key);
-      const model = genAI.getGenerativeModel({
-        model: "gemini-3-flash-preview",
-      });
+      chrome.runtime.sendMessage(
+        { type: "VALIDATE_API_KEY", apiKey: key },
+        (response) => {
+          if (chrome.runtime.lastError) {
+            console.error(chrome.runtime.lastError);
+            apiStatus.className = "status-badge invalid";
+            apiStatus.textContent = "Network Error";
+            return;
+          }
 
-      const result = await model.generateContent({
-        contents: [{ role: "user", parts: [{ text: "Hello" }] }],
-      });
-
-      const response = await result.response;
-      if (response && response.text()) {
-        apiStatus.className = "status-badge valid";
-        apiStatus.textContent = "Valid";
-        // Auto-save the key when valid
-        saveSection("api");
-      } else {
-        apiStatus.className = "status-badge invalid";
-        apiStatus.textContent = "Invalid Key";
-      }
+          if (response && response.valid) {
+            apiStatus.className = "status-badge valid";
+            apiStatus.textContent = "Valid";
+            // Auto-save the key when valid
+            saveSection("api");
+          } else {
+            apiStatus.className = "status-badge invalid";
+            apiStatus.textContent = "Invalid Key";
+          }
+        }
+      );
     } catch (e) {
       console.error(e);
       apiStatus.className = "status-badge invalid";

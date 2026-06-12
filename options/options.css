@@ -3,20 +3,21 @@
 
 /* ── Design Tokens ───────────────────────────────────────────── */
 :root {
-  --bg:       #15202B;
-  --sidebar:  #111921;
-  --card:     #192734;
-  --accent:   #1DA1F2;
-  --accent-hover: #1a91da;
-  --text:     #E7E9EA;
-  --muted:    #8B98A5;
-  --success:  #00BA7C;
-  --warning:  #F7931A;
-  --danger:   #F4212E;
-  --border:   #38444D;
+  --bg:       #000000;
+  --sidebar:  #17181c;
+  --card:     #17181c;
+  --accent:   #1c9cf0;
+  --accent-hover: #1da1f2;
+  --text:     #e7e9ea;
+  --muted:    #72767a;
+  --success:  #00b87a;
+  --warning:  #f7b928;
+  --danger:   #f4212e;
+  --border:   #242628;
+  --input:    #22303c;
   --overlay:  rgba(0,0,0,.55);
-  --glass:    rgba(25, 39, 52, 0.72);
-  --glass-border: rgba(56, 68, 77, 0.45);
+  --glass:    rgba(23, 24, 28, 0.72);
+  --glass-border: rgba(36, 38, 40, 0.45);
   --radius:   12px;
   --radius-sm: 8px;
   --radius-xs: 6px;

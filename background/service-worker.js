@@ -190,6 +190,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       sendResponse({ success: true });
       return false;
 
+    // ── Validate API Key ──
+    case 'VALIDATE_API_KEY':
+      if (self.XGemini && typeof self.XGemini.validateApiKey === 'function') {
+        self.XGemini.validateApiKey(message.apiKey)
+          .then(sendResponse)
+          .catch((err) => sendResponse({ valid: false, error: err.message }));
+      } else {
+        sendResponse({ valid: false, error: 'XGemini library not loaded in SW' });
+      }
+      return true;
+
     default:
       return false;
   }

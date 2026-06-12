@@ -7,23 +7,23 @@
 
 /* ── Design Tokens ── */
 :root {
-  --bg:       #15202B;
-  --bg-deep:  #0D1117;
-  --card:     #192734;
-  --card-alt: #1E2D3D;
-  --accent:   #1DA1F2;
-  --accent-hover: #1A91DA;
-  --accent-glow: rgba(29, 161, 242, 0.25);
-  --text:     #E7E9EA;
-  --text-secondary: #D1D5DB;
-  --muted:    #8B98A5;
-  --success:  #00BA7C;
-  --warning:  #F7931A;
-  --danger:   #F4212E;
-  --border:   rgba(255, 255, 255, 0.06);
-  --border-hover: rgba(255, 255, 255, 0.12);
-  --glass-bg: rgba(25, 39, 52, 0.65);
-  --glass-border: rgba(255, 255, 255, 0.08);
+  --bg:       #000000;
+  --bg-deep:  #000000;
+  --card:     #17181c;
+  --card-alt: #22303c;
+  --accent:   #1c9cf0;
+  --accent-hover: #1da1f2;
+  --accent-glow: rgba(28, 156, 240, 0.25);
+  --text:     #e7e9ea;
+  --text-secondary: #d9d9d9;
+  --muted:    #72767a;
+  --success:  #00b87a;
+  --warning:  #f7b928;
+  --danger:   #f4212e;
+  --border:   #242628;
+  --border-hover: #38444d;
+  --glass-bg: rgba(23, 24, 28, 0.65);
+  --glass-border: rgba(36, 38, 40, 0.45);
   --radius-sm:  8px;
   --radius-md:  12px;
   --radius-lg:  16px;

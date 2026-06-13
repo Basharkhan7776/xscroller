@@ -1,4 +1,3 @@
-
 (function () {
   "use strict";
 
@@ -11,10 +10,10 @@
   const saveBtns = document.querySelectorAll(".btn-save");
 
   // API Section
-  const apiKeyInput = document.getElementById("api-key");
-  const toggleApiKeyBtn = document.getElementById("toggle-api-key");
-  const validateKeyBtn = document.getElementById("btn-validate-key");
-  const apiStatus = document.getElementById("api-status");
+  const apiKeysContainer = document.getElementById("api-keys-container");
+  const addKeyBtn = document.getElementById("btn-add-key");
+  const validateKeysBtn = document.getElementById("btn-validate-keys");
+  let apiKeysList = [];
 
   // Persona Section
   const pName = document.getElementById("persona-name");
@@ -62,21 +61,80 @@
     });
   }
 
+  // API Keys UI rendering
+  function renderApiKeys() {
+    apiKeysContainer.innerHTML = "";
+    apiKeysList.forEach((key, index) => {
+      const wrapper = document.createElement("div");
+      wrapper.className = "password-wrapper";
+      wrapper.style.display = "flex";
+      wrapper.style.alignItems = "center";
+      wrapper.style.gap = "8px";
+
+      const input = document.createElement("input");
+      input.type = "password";
+      input.id = `api-key-${index}`;
+      input.className = "form-input";
+      input.placeholder = "AIzaSy...";
+      input.value = key;
+      input.style.flex = "1";
+      // Update state when typing
+      input.addEventListener("input", (e) => {
+        apiKeysList[index] = e.target.value;
+      });
+
+      const toggleBtn = document.createElement("button");
+      toggleBtn.type = "button";
+      toggleBtn.className = "toggle-password";
+      toggleBtn.textContent = "👁️";
+      toggleBtn.style.position = "static";
+      toggleBtn.style.transform = "none";
+      toggleBtn.addEventListener("click", () => {
+        if (input.type === "password") {
+          input.type = "text";
+          toggleBtn.textContent = "🔒";
+        } else {
+          input.type = "password";
+          toggleBtn.textContent = "👁️";
+        }
+      });
+
+      const removeBtn = document.createElement("button");
+      removeBtn.type = "button";
+      removeBtn.className = "btn btn-secondary";
+      removeBtn.textContent = "✕";
+      removeBtn.style.padding = "0 10px";
+      removeBtn.addEventListener("click", () => {
+        apiKeysList.splice(index, 1);
+        if (apiKeysList.length === 0) apiKeysList.push("");
+        renderApiKeys();
+      });
+
+      const statusBadge = document.createElement("span");
+      statusBadge.id = `api-status-${index}`;
+      statusBadge.className = "status-badge unchecked";
+      statusBadge.textContent = "Unchecked";
+      statusBadge.style.minWidth = "85px";
+
+      wrapper.appendChild(input);
+      wrapper.appendChild(toggleBtn);
+      wrapper.appendChild(removeBtn);
+      wrapper.appendChild(statusBadge);
+
+      apiKeysContainer.appendChild(wrapper);
+    });
+  }
+
   // Event Listeners
   function setupListeners() {
-    // API key visibility toggle
-    toggleApiKeyBtn.addEventListener("click", () => {
-      if (apiKeyInput.type === "password") {
-        apiKeyInput.type = "text";
-        toggleApiKeyBtn.textContent = "🔒";
-      } else {
-        apiKeyInput.type = "password";
-        toggleApiKeyBtn.textContent = "👁️";
-      }
+    // Add Key
+    addKeyBtn.addEventListener("click", () => {
+      apiKeysList.push("");
+      renderApiKeys();
     });
 
-    // Validate API Key
-    validateKeyBtn.addEventListener("click", validateApiKey);
+    // Validate Keys
+    validateKeysBtn.addEventListener("click", validateAllKeys);
 
     // Slider value update
     olFreq.addEventListener("input", (e) => {
@@ -96,7 +154,7 @@
   async function loadData() {
     try {
       const data = await chrome.storage.local.get([
-        "xscroller_api_key",
+        "xscroller_api_keys",
         "xscroller_persona",
         "xscroller_openlabs",
         "xscroller_targeting",
@@ -104,11 +162,12 @@
       ]);
 
       // API
-      if (data.xscroller_api_key) {
-        apiKeyInput.value = data.xscroller_api_key;
-        apiStatus.className = "status-badge unchecked";
-        apiStatus.textContent = "Unchecked";
+      apiKeysList = Array.isArray(data.xscroller_api_keys) ? data.xscroller_api_keys : [];
+      if (typeof data.xscroller_api_key === 'string' && data.xscroller_api_key) {
+        apiKeysList.push(data.xscroller_api_key); // migration
       }
+      if (apiKeysList.length === 0) apiKeysList.push("");
+      renderApiKeys();
 
       // Persona
       if (data.xscroller_persona) {
@@ -148,41 +207,59 @@
     }
   }
 
-  // Validate API Key
-  async function validateApiKey() {
-    const key = apiKeyInput.value.trim();
-    if (!key) return;
+  // Validate API Keys
+  async function validateAllKeys() {
+    for (let i = 0; i < apiKeysList.length; i++) {
+      const key = apiKeysList[i].trim();
+      const statusBadge = document.getElementById(`api-status-${i}`);
+      
+      if (!key) {
+        if (statusBadge) {
+          statusBadge.className = "status-badge unchecked";
+          statusBadge.textContent = "Empty";
+        }
+        continue;
+      }
 
-    apiStatus.className = "status-badge checking";
-    apiStatus.textContent = "Checking...";
+      if (statusBadge) {
+        statusBadge.className = "status-badge checking";
+        statusBadge.textContent = "Checking...";
+      }
 
-    try {
-      chrome.runtime.sendMessage(
-        { type: "VALIDATE_API_KEY", apiKey: key },
-        (response) => {
-          if (chrome.runtime.lastError) {
-            console.error(chrome.runtime.lastError);
-            apiStatus.className = "status-badge invalid";
-            apiStatus.textContent = "Network Error";
-            return;
+      try {
+        const response = await new Promise((resolve) => {
+          chrome.runtime.sendMessage({ type: "VALIDATE_API_KEY", apiKey: key }, resolve);
+        });
+
+        if (chrome.runtime.lastError || !response) {
+          if (statusBadge) {
+            statusBadge.className = "status-badge invalid";
+            statusBadge.textContent = "Network Error";
           }
+          continue;
+        }
 
-          if (response && response.valid) {
-            apiStatus.className = "status-badge valid";
-            apiStatus.textContent = "Valid";
-            // Auto-save the key when valid
-            saveSection("api");
-          } else {
-            apiStatus.className = "status-badge invalid";
-            apiStatus.textContent = "Invalid Key";
+        if (response.valid) {
+          if (statusBadge) {
+            statusBadge.className = "status-badge valid";
+            statusBadge.textContent = "Valid";
+          }
+        } else {
+          if (statusBadge) {
+            statusBadge.className = "status-badge invalid";
+            statusBadge.textContent = "Invalid Key";
           }
         }
-      );
-    } catch (e) {
-      console.error(e);
-      apiStatus.className = "status-badge invalid";
-      apiStatus.textContent = "Network Error";
+      } catch (e) {
+        console.error(e);
+        if (statusBadge) {
+          statusBadge.className = "status-badge invalid";
+          statusBadge.textContent = "Error";
+        }
+      }
     }
+    // Auto-save the keys after validation
+    saveSection("api");
   }
 
   // Save specific section
@@ -191,7 +268,11 @@
       let updates = {};
 
       if (section === "api") {
-        updates["xscroller_api_key"] = apiKeyInput.value.trim();
+        updates["xscroller_api_keys"] = apiKeysList.map(k => k.trim()).filter(Boolean);
+        // Refresh UI with cleaned array
+        apiKeysList = [...updates["xscroller_api_keys"]];
+        if (apiKeysList.length === 0) apiKeysList.push("");
+        renderApiKeys();
       } else if (section === "persona") {
         updates["xscroller_persona"] = {
           name: pName.value.trim(),

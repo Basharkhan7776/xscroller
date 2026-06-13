@@ -17,7 +17,7 @@ const KEYS = {
   ENABLED:        'xscroller_enabled',
   MODE:           'xscroller_mode',
   SCROLL_SPEED:   'xscroller_scroll_speed',
-  API_KEY:        'xscroller_api_key',
+  API_KEYS:       'xscroller_api_keys',
   PERSONA:        'xscroller_persona',
   OPENLABS:       'xscroller_openlabs',
   TARGETING:      'xscroller_targeting',
@@ -214,17 +214,18 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 async function handleGenerateReply(message) {
   const tweet = message.tweet;
 
-  const [apiKey, persona, openlabs, safety, stats] = await Promise.all([
-    storageGet(KEYS.API_KEY),
+  const [apiKeys, persona, openlabs, safety, stats] = await Promise.all([
+    storageGet(KEYS.API_KEYS),
     storageGet(KEYS.PERSONA),
     storageGet(KEYS.OPENLABS),
     storageGet(KEYS.SAFETY),
     checkAndResetDaily(),
   ]);
 
-  // Guard: API key required
-  if (!apiKey) {
-    return { success: false, error: 'No Gemini API key configured. Set one in the Options page.' };
+  // Guard: API keys required
+  const validKeys = Array.isArray(apiKeys) ? apiKeys.filter(k => k.trim()) : [];
+  if (validKeys.length === 0) {
+    return { success: false, stopScrolling: true, error: 'No Gemini API keys configured. Set one in the Options page.' };
   }
 
   // Guard: daily limit
@@ -235,14 +236,37 @@ async function handleGenerateReply(message) {
   // Decide promotion
   const shouldPromote = Math.random() * 100 < (openlabs.promotionFrequency || 0);
 
-  // Call Gemini
-  const result = await self.XGemini.generateReply(
-    apiKey,
-    tweet,
-    persona,
-    openlabs,
-    shouldPromote,
-  );
+  // Call Gemini with Fallback
+  let result = null;
+  let lastError = null;
+
+  for (let i = 0; i < validKeys.length; i++) {
+    const key = validKeys[i];
+    try {
+      result = await self.XGemini.generateReply(
+        key,
+        tweet,
+        persona,
+        openlabs,
+        shouldPromote,
+      );
+
+      if (result.success) {
+        break; // Stop looping if successful
+      } else {
+        lastError = result.error;
+        console.warn(`API Key ${i+1} failed: ${lastError}. Trying next...`);
+      }
+    } catch (err) {
+      lastError = err.message;
+      console.warn(`API Key ${i+1} threw error: ${lastError}. Trying next...`);
+    }
+  }
+
+  // If we exhausted all keys and none succeeded
+  if (!result || !result.success) {
+    return { success: false, stopScrolling: true, error: `All API keys failed. Last error: ${lastError}` };
+  }
 
   if (result.success) {
     // Log the generation

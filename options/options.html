@@ -55,19 +55,16 @@
         <p class="section-subtitle">Configure your Gemini API key for AI-powered replies.</p>
         
         <div class="glass-card">
-          <h3 class="card-title"><span class="card-icon">🔑</span> Gemini API Key</h3>
-          <div class="form-group">
-            <label for="api-key">API Key</label>
-            <div class="password-wrapper">
-              <input type="password" id="api-key" class="form-input" placeholder="AIzaSy...">
-              <button type="button" class="toggle-password" id="toggle-api-key">👁️</button>
-            </div>
-            <p class="form-hint">Get a free key from <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--accent)">Google AI Studio</a>.</p>
+          <h3 class="card-title"><span class="card-icon">🔑</span> Gemini API Keys</h3>
+          <p class="form-hint" style="margin-bottom: 12px;">Add multiple keys. If one fails, XScroller will automatically fallback to the next. Get free keys from <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--accent)">Google AI Studio</a>.</p>
+          
+          <div id="api-keys-container" class="form-group" style="display:flex; flex-direction:column; gap: 10px;">
+            <!-- Dynamic inputs will be inserted here -->
           </div>
           
-          <div class="inline-row">
-            <button type="button" class="btn btn-secondary" id="btn-validate-key">Validate Key</button>
-            <span id="api-status" class="status-badge unchecked">Unchecked</span>
+          <div class="inline-row" style="margin-top: 15px;">
+            <button type="button" class="btn btn-secondary" id="btn-add-key">+ Add Key</button>
+            <button type="button" class="btn btn-secondary" id="btn-validate-keys" style="margin-left: 10px;">Validate All</button>
           </div>
         </div>
         <div class="save-bar">
